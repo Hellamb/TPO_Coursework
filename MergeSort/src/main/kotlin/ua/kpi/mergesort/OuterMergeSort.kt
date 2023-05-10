@@ -4,7 +4,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 
-suspend fun sort(unsortedArr: Array<Int>, parallelDepth: Int): Array<Int> {
+suspend fun outerSort(unsortedArr: Array<Int>, parallelDepth: Int = 0): Array<Int> {
     if (unsortedArr.size < 2) return unsortedArr.copyOf()
 
     val mid = unsortedArr.size / 2
@@ -17,20 +17,20 @@ suspend fun sort(unsortedArr: Array<Int>, parallelDepth: Int): Array<Int> {
 
     if (parallelDepth > 0) {
         coroutineScope {
-            leftDeferred = async { sort(unsortedLeft, parallelDepth - 1) }
-            rightDeferred = async { sort(unsortedRight, parallelDepth - 1) }
+            leftDeferred = async { outerSort(unsortedLeft, parallelDepth - 1) }
+            rightDeferred = async { outerSort(unsortedRight, parallelDepth - 1) }
         }
         left = leftDeferred.await()
         right = rightDeferred.await()
     } else {
-        left = sort(unsortedLeft, 0)
-        right = sort(unsortedRight, 0)
+        left = outerSort(unsortedLeft, 0)
+        right = outerSort(unsortedRight, 0)
     }
 
-    return merge(left, right)
+    return outerMerge(left, right)
 }
 
-fun merge(leftArray: Array<Int>, rightArray: Array<Int>): Array<Int> {
+fun outerMerge(leftArray: Array<Int>, rightArray: Array<Int>): Array<Int> {
     val sortedArr = Array(leftArray.size + rightArray.size) { 0 }
     var i = 0
     var j = 0
